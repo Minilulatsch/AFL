@@ -3149,6 +3149,18 @@ static u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
   u8  hnb;
   s32 fd;
   u8  keeping = 0, res;
+  
+  if (crash_mode == FAULT_CRASH && getenv("AFL_SAVE_NON_CRASHING") && fault == FAULT_NONE && has_new_bits(virgin_bits)) {
+    fn = alloc_printf("%s/crashes/id:%06llu,%s_NO_CRASH", out_dir,
+                        unique_crashes, describe_op(0));
+    fd = open(fn, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    if (fd > 0) {
+      ck_write(fd, mem, len, fn);
+      close(fd);
+      ck_free(fn);
+    }  
+}
+
 
   if (fault == crash_mode) {
 
